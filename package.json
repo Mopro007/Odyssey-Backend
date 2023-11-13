@@ -1,0 +1,30 @@
+{
+  "name": "odyssey-backend",
+  "version": "1.0.0",
+  "description": "the backend server of Odyssey",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "nodemon server.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mopro007/Odyssey-Backend.git"
+  },
+  "keywords": [
+    "Ynmde&749"
+  ],
+  "author": "Moe Hasan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mopro007/Odyssey-Backend/issues"
+  },
+  "homepage": "https://github.com/Mopro007/Odyssey-Backend#readme",
+  "dependencies": {
+    "aws-sdk": "^2.1494.0",
+    "express": "^4.18.2",
+    "mongodb": "^6.2.0",
+    "mongoose": "^8.0.0",
+    "nodemon": "^3.0.1"
+  }
+}
