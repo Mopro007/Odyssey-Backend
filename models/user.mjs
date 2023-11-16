@@ -11,7 +11,10 @@ const userSchema = new Schema({
     brief: { type: String, required: true },
     desiredplaces: { type: [String], required: true },
     visitedplaces: { type: [String], required: true },
-    profilepic: { type: String }, 
+    profilepic: { type: String },
+    Odyssey: {type: ObjectId, ref: 'Odyssey'},
+    savedEvents: {type: [ObjectId], ref: 'Event'},
+    joinedEvents: {type: [ObjectId], ref: 'Event'},
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);
