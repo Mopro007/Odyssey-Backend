@@ -4,13 +4,15 @@ import mongoose from 'mongoose';
 import User from './models/user.mjs';
 import Event from './models/event.mjs';
 import Odyssey from './models/odyssey.mjs';
+import 'dotenv/config';
 const server = express();
 server.use(express.json());
 
 //establishing the connection with the database
-const uri = "mongodb+srv://moe_hasan:Ynmde&749@odyssey.phdeuh3.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.MONGODB_URI;
+const port = process.env.PORT;
 mongoose.connect(uri)
-    .then((result) => server.listen(3000,() => {console.log("listening on localhost 3000...")}))
+    .then((result) => server.listen(port,() => {console.log("listening on localhost: "+port)}))
     .catch((err) => {console.log(err);})
 
 
