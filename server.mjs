@@ -5,7 +5,17 @@ import User from './models/user.mjs';
 import Event from './models/event.mjs';
 import Odyssey from './models/odyssey.mjs';
 import 'dotenv/config';
+import cors from 'cors';
 const server = express();
+// Use CORS with default settings (allowing all cross-origin requests)
+server.use(cors());
+// Or configure CORS with options for more control
+// server.use(cors({
+//   origin: 'https://example.com', // or use an array of origins
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   // ...other configurations
+// }));
 server.use(express.json());
 
 //establishing the connection with the database
