@@ -7,7 +7,7 @@ const request = supertest(server);
 
 /* Connecting to the database before each test. */
 beforeEach(async () => {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.OdysseyTestingDB_URI);
   });
 
 

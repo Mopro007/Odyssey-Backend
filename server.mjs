@@ -6,6 +6,10 @@ import Event from './models/event.mjs';
 import Odyssey from './models/odyssey.mjs';
 import 'dotenv/config';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import helmet from 'helmet';
+
 const server = express();
 // Use CORS with default settings (allowing all cross-origin requests)
 server.use(cors());
@@ -18,8 +22,21 @@ server.use(cors());
 // }));
 server.use(express.json());
 
+//Rate limiting
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200 // limit each IP to 100 requests per windowMs
+  });
+server.use(apiLimiter);
+
+//Sanitization
+server.use(mongoSanitize());
+
+//Additional Headers with Helmet
+server.use(helmet());
+
 //establishing the connection with the database
-const uri = process.env.MONGODB_URI;
+const uri = process.env.OdysseyDB_URI;
 const port = process.env.PORT;
 mongoose.connect(uri)
     .then((result) => server.listen(port,() => {console.log("listening on localhost: "+port)}))
