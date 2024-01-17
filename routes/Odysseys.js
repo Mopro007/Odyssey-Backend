@@ -1,5 +1,12 @@
 import express from 'express';
 import Odyssey from './models/odyssey.mjs';
+import 'dotenv/config';
+import expressJwt from 'express-jwt';
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+// Apply expressJwt middleware with your JWT_SECRET_KEY
+const requireAuth = expressJwt({ secret: JWT_SECRET_KEY });
+
 const router = express.Router();
 
 
@@ -9,7 +16,7 @@ const router = express.Router();
 //Handling Odysseys CRUD...
 
 // POST method - Create a new odyssey
-router.post('/odysseys', (req, res) => {
+router.post('/odysseys', requireAuth,  (req, res) => {
     const newOdyssey = new Odyssey(req.body);
     newOdyssey.save()
         .then((result) => res.send("Odyssey created: \n" + newOdyssey + "\nResult:\n" + result))
@@ -17,7 +24,7 @@ router.post('/odysseys', (req, res) => {
 });
 
 // GET method - Retrieve odysseys
-router.get('/odysseys', (req, res) => {
+router.get('/odysseys', requireAuth,  (req, res) => {
     if (req.query.id) {
         Odyssey.findById(req.query.id)
             .then((odyssey) => {
@@ -37,7 +44,7 @@ router.get('/odysseys', (req, res) => {
 });
 
 // PUT method - Update an odyssey
-router.put('/odysseys/:id', (req, res) => {
+router.put('/odysseys/:id', requireAuth, (req, res) => {
     Odyssey.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedOdyssey) => {
             if (updatedOdyssey) res.json(updatedOdyssey);
@@ -47,7 +54,7 @@ router.put('/odysseys/:id', (req, res) => {
 });
 
 // DELETE method - Delete an odyssey
-router.delete('/odysseys/:id', (req, res) => {
+router.delete('/odysseys/:id', requireAuth, (req, res) => {
     Odyssey.findByIdAndDelete(req.params.id)
         .then((deletedOdyssey) => {
             if (deletedOdyssey) res.send('Odyssey deleted successfully');
@@ -57,7 +64,7 @@ router.delete('/odysseys/:id', (req, res) => {
 });
 
 // POST method - Participate in an Odyssey
-router.post('/odysseys/:id/participate', (req, res) => {
+router.post('/odysseys/:id/participate', requireAuth, (req, res) => {
     const userId = req.body.userId;
     Odyssey.findByIdAndUpdate(req.params.id, 
         { $addToSet: { participants: userId } }, // prevents duplicates
@@ -73,7 +80,7 @@ router.post('/odysseys/:id/participate', (req, res) => {
 });
 
 // POST method - Un-participate from an Odyssey
-router.post('/odysseys/:id/unparticipate', (req, res) => {
+router.post('/odysseys/:id/unparticipate', requireAuth, (req, res) => {
     const userId = req.body.userId;
     Odyssey.findByIdAndUpdate(req.params.id, 
         { $pull: { participants: userId } },

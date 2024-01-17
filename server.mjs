@@ -6,7 +6,6 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
-import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import usersRouter from './routes/Users.js';
 import eventsRouter from './routes/Events.js';

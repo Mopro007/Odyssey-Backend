@@ -1,11 +1,14 @@
 import express from 'express';
 import User from './models/user.mjs';
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
+import expressJwt from 'express-jwt';
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+// Apply expressJwt middleware with your JWT_SECRET_KEY
+const requireAuth = expressJwt({ secret: JWT_SECRET_KEY });
+
 const router = express.Router();
-
-
-
-
-
 
 //Handling Users CRUD Operations...
 
@@ -19,8 +22,37 @@ router.post('/users', (req,res) => {
         .catch( (err) => {res.send("Something Went Wrong!\n"+err)} )
 });
 
+
+//POST method - Login a user
+router.post('/users/login', (req, res) => {
+    // Check if email and password are present in the request
+    if (req.body.email && req.body.password) {
+        // Check if user exists in the database
+        User.findOne({ email: req.body.email })
+            .then((user) => {
+                if (user) {
+                    // Check if password matches
+                    if (user.password === req.body.password) {
+                        // Create a token
+                        const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY);
+                        res.json({ token: token });
+                    } else {
+                        res.status(401).send('Incorrect password');
+                    }
+                } else {
+                    res.status(404).send('User not found');
+                }
+            })
+            .catch((err) => {
+                res.status(500).send("Error logging in: " + err);
+            });
+    } else {
+        res.status(400).send('Email and password are required in the request body');
+    }
+});
+
 // GET method - Retrieve users based on query parameters or specific ID
-router.get('/users', (req, res) => {
+router.get('/users', requireAuth,  (req, res) => {
     // Check if there is an ID in the query
     if (req.query.id) {
         User.findById(req.query.id)
@@ -52,7 +84,7 @@ router.get('/users', (req, res) => {
 });
 
 // PUT method - Update a user by ID
-router.put('/users/:id', (req, res) => {
+router.put('/users/:id', requireAuth,  (req, res) => {
     User.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedUser) => {
             if (updatedUser) {
@@ -67,7 +99,7 @@ router.put('/users/:id', (req, res) => {
 });
 
 // DELETE method - Delete a user by ID
-router.delete('/users/:id', (req, res) => {
+router.delete('/users/:id', requireAuth,  (req, res) => {
     User.findByIdAndDelete(req.params.id)
         .then((deletedUser) => {
             if (deletedUser) {

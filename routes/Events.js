@@ -1,5 +1,12 @@
 import express from 'express';
 import Event from './models/event.mjs';
+import 'dotenv/config';
+import expressJwt from 'express-jwt';
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+// Apply expressJwt middleware with your JWT_SECRET_KEY
+const requireAuth = expressJwt({ secret: JWT_SECRET_KEY });
+
 const router = express.Router();
 
 
@@ -9,7 +16,7 @@ const router = express.Router();
 //Handling Events CRUD Operations...
 
 // POST method - Create a new event
-router.post('/events', (req, res) => {
+router.post('/events', requireAuth, (req, res) => {
     const newEvent = new Event(req.body);
     newEvent.save()
         .then((result) => res.send("Event created: \n" + newEvent + "\nResult:\n" + result))
@@ -17,7 +24,7 @@ router.post('/events', (req, res) => {
 });
 
 // GET method - Retrieve events
-router.get('/events', (req, res) => {
+router.get('/events', requireAuth, (req, res) => {
     if (req.query.id) {
         Event.findById(req.query.id)
             .then((event) => {
@@ -37,7 +44,7 @@ router.get('/events', (req, res) => {
 });
 
 // PUT method - Update an event
-router.put('/events/:id', (req, res) => {
+router.put('/events/:id', requireAuth, (req, res) => {
     Event.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedEvent) => {
             if (updatedEvent) res.json(updatedEvent);
@@ -62,7 +69,7 @@ router.delete('/events/:id', (req, res) => {
 });
 
 // POST method - Participate in an Event
-router.post('/events/:id/participate', (req, res) => {
+router.post('/events/:id/participate', requireAuth, (req, res) => {
     const userId = req.body.userId;
     Event.findByIdAndUpdate(req.params.id, 
         { $addToSet: { participants: userId } }, // prevents duplicates
@@ -78,7 +85,7 @@ router.post('/events/:id/participate', (req, res) => {
 });
 
 // POST method - Un-participate from an Event
-router.post('/events/:id/unparticipate', (req, res) => {
+router.post('/events/:id/unparticipate', requireAuth, (req, res) => {
     const userId = req.body.userId;
     Event.findByIdAndUpdate(req.params.id, 
         { $pull: { participants: userId } },
@@ -94,7 +101,7 @@ router.post('/events/:id/unparticipate', (req, res) => {
 });
 
 // POST method - Save an Event
-router.post('/users/:id/saveEvent', (req, res) => {
+router.post('/users/:id/saveEvent', requireAuth, (req, res) => {
     const eventId = req.body.eventId;
     User.findByIdAndUpdate(req.params.id, 
         { $addToSet: { savedEvents: eventId } }, // prevents duplicates
@@ -110,7 +117,7 @@ router.post('/users/:id/saveEvent', (req, res) => {
 });
 
 // POST method - Unsave an Event
-router.post('/users/:id/unsaveEvent', (req, res) => {
+router.post('/users/:id/unsaveEvent', requireAuth, (req, res) => {
     const eventId = req.body.eventId;
     User.findByIdAndUpdate(req.params.id, 
         { $pull: { savedEvents: eventId } },
@@ -126,7 +133,7 @@ router.post('/users/:id/unsaveEvent', (req, res) => {
 });
 
 // POST method - Add Memory to an Event
-router.post('/events/:id/addMemory', (req, res) => {
+router.post('/events/:id/addMemory', requireAuth, (req, res) => {
     const memoryUrl = req.body.memoryUrl;
     Event.findByIdAndUpdate(req.params.id, 
         { $addToSet: { memories: memoryUrl } }, // prevents duplicates
@@ -142,7 +149,7 @@ router.post('/events/:id/addMemory', (req, res) => {
 });
 
 // POST method - Remove Memory from an Event
-router.post('/events/:id/removeMemory', (req, res) => {
+router.post('/events/:id/removeMemory', requireAuth, (req, res) => {
     const memoryUrl = req.body.memoryUrl;
     Event.findByIdAndUpdate(req.params.id, 
         { $pull: { memories: memoryUrl } },

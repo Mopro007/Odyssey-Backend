@@ -12,4 +12,4 @@ const eventSchema = new Schema({
     memories: { type: [String]}
 }, { timestamps: true });
 
-export default mongoose.model('Odyssey', odysseySchema);
+export default mongoose.model('Event', eventSchema);
