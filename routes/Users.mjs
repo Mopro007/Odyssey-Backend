@@ -1,12 +1,12 @@
 import express from 'express';
-import User from './models/user.mjs';
+import User from '../models/user.mjs';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
-import expressJwt from 'express-jwt';
+import {expressjwt as JWT} from 'express-jwt';
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 // Apply expressJwt middleware with your JWT_SECRET_KEY
-const requireAuth = expressJwt({ secret: JWT_SECRET_KEY });
+const requireAuth = JWT({ secret: JWT_SECRET_KEY , algorithms: ['HS256']});
 
 const router = express.Router();
 

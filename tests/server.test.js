@@ -10,37 +10,61 @@ beforeEach(async () => {
     await mongoose.connect(process.env.OdysseyTestingDB_URI);
   });
 
+  //testing the Users router endpoints...
 
-  //testing the GET /users endpoint
-  describe("GET /users", () => {
-    it("should return all users", async () => {
-      const res = await request(server).get(
-        "/users"
-      );
+  //testing the POST /users endpoint
+  describe("POST /users", () => {
+  it("should create a user", async () => {
+    const res = await request(server).post("/users").send({
+      email: 'example@gmail.com',
+      password: 'example.123',
+      username: 'example',
+      fullname: 'example example example',
+      jobtitle: 'example',
+      brief: 'example example exampleexample example exampleexample example example.',
+      desiredplaces: ['example','example','example'],
+      visitedplaces: ['example','example','example'],
+      profilepic: 'https://example.com/example123',
+      Odyssey: null,
+      savedEvents: null,
+      joinedEvents: null,
+    });
+    expect(res.statusCode).toBe(201);
+  });
+  });
+
+  //testing the POST /users/login endpoint
+  describe("POST /users/login", () => {
+    it("should login a user", async () => {
+      const res = await request(server).post("/users/login").send({
+        email: 'example@gmail.com',
+        password: 'example.123',
+      });
       expect(res.statusCode).toBe(200);
     });
   });
 
-  //testing the POST /users endpoint
-  describe("POST /users", () => {
-    it("should create a user", async () => {
-      const res = await request(server).post("/users").send({
-        email: 'example@gmail.com',
-        password: 'example.123',
-        username: 'example',
-        fullname: 'example example example',
-        jobtitle: 'example',
-        brief: 'example example exampleexample example exampleexample example example.',
-        desiredplaces: ['example','example','example'],
-        visitedplaces: ['example','example','example'],
-        profilepic: 'https://example.com/example123',
-        Odyssey: null,
-        savedEvents: null,
-        joinedEvents: null,
-      });
-      expect(res.statusCode).toBe(201);
+  // testing the GET /users by ID or query endpoint
+  describe("GET /users", () => {
+    // test scenario 1: Retrieve a user by ID
+    it("should return a user by ID", async () => {
+      const userId = '';
+      const res = await request(server).get(`/users/${userId}`);
+      expect(res.statusCode).toBe(200);
+      // Add more expectations based on the response data
+    });
+
+    // test scenario 2: Query for users
+    it("should return a list of users matching the query", async () => {
+      // Define a query, e.g., search for users with a specific property
+      const query = { propertyName: 'propertyValue' };
+      const res = await request(server).get("/users").query(query);
+      expect(res.statusCode).toBe(200);
+      // Add more expectations based on the response data
     });
   });
+
+
 
   //testing the PUT /users endpoint
   describe("PUT /users/:id", () => {
@@ -64,6 +88,9 @@ beforeEach(async () => {
     });
   });
 
+
+
+  //testing the Odysseys router endpoints...
   // POST method - Create a new odyssey
   describe("POST /odysseys", () => {
     it("should create an odyssey", async () => {

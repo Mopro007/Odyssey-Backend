@@ -6,10 +6,9 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
-import Joi from 'joi';
-import usersRouter from './routes/Users.js';
-import eventsRouter from './routes/Events.js';
-import odysseysRouter from './routes/Odysseys.js';
+import usersRouter from './routes/Users.mjs';
+import eventsRouter from './routes/Events.mjs';
+import odysseysRouter from './routes/Odysseys.mjs';
 
 const server = express();
 // Use CORS with default settings (allowing all cross-origin requests)
