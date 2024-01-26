@@ -11,8 +11,16 @@ beforeEach(async () => {
   });
 
   //testing the Users router endpoints...
+  //testing the GET /users/test endpoint
+  describe("GET /users/test", () => {
+    it("should return a test message", async () => {
+      const res = await request(server).get("/users/test");
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toBe("Hello World!");
+    });
+  });
 
-  //testing the POST /users endpoint
+  //testing the POST /users create new user endpoint
   describe("POST /users", () => {
   it("should create a user", async () => {
     const res = await request(server).post("/users").send({
@@ -30,6 +38,9 @@ beforeEach(async () => {
       joinedEvents: null,
     });
     expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('id');
+    //store the id in a global variable for future use
+    userId = res.body.id;
   });
   });
 
@@ -41,6 +52,10 @@ beforeEach(async () => {
         password: 'example.123',
       });
       expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('user');
+      //store the user in a global variable for future use
+      user = res.body.user;
     });
   });
 
@@ -48,33 +63,31 @@ beforeEach(async () => {
   describe("GET /users", () => {
     // test scenario 1: Retrieve a user by ID
     it("should return a user by ID", async () => {
-      const userId = '';
       const res = await request(server).get(`/users/${userId}`);
       expect(res.statusCode).toBe(200);
-      // Add more expectations based on the response data
+      expect(res.body).toHaveProperty('user');
     });
 
     // test scenario 2: Query for users
     it("should return a list of users matching the query", async () => {
       // Define a query, e.g., search for users with a specific property
-      const query = { propertyName: 'propertyValue' };
+      const query = { username: "example" };
       const res = await request(server).get("/users").query(query);
       expect(res.statusCode).toBe(200);
-      // Add more expectations based on the response data
+      expect(res.body).toHaveProperty('users');
     });
   });
-
-
 
   //testing the PUT /users endpoint
   describe("PUT /users/:id", () => {
     it("should update a user", async () => {
       const res = await request(server)
-        .patch("users/userID")
+        .patch("users/userId")
         .send({
           password: 'new password',
         });
       expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('updatedUser');
     });
   });
   
@@ -82,7 +95,7 @@ beforeEach(async () => {
   describe("DELETE /users/:id", () => {
     it("should delete a user", async () => {
       const res = await request(server).delete(
-        "users/userID"
+        "users/userId"
       );
       expect(res.statusCode).toBe(200);
     });
@@ -127,6 +140,9 @@ beforeEach(async () => {
     });
   });
 
+
+
+  //testing the Events router endpoints...
   // POST method - Create a new event
   describe("POST /events", () => {
     // Test case here

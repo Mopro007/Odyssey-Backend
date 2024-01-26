@@ -41,6 +41,7 @@ usersRouter.post('/login', (req, res) => {
                         // Create a token
                         const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY);
                         res.json({ token: token });
+                        res.status(200).send(user);
                     } else {
                         res.status(401).send('Incorrect password');
                     }
@@ -58,7 +59,6 @@ usersRouter.post('/login', (req, res) => {
 
 // GET method - Retrieve users based on query parameters or specific ID
 usersRouter.get('/', requireAuth,  (req, res) => {
-    console.log("recieved a request with body : ",req.body);
     // Check if there is an ID in the query
     if (req.query.id) {
         User.findById(req.query.id)
