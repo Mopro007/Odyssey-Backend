@@ -23,8 +23,8 @@ usersRouter.post('/', (req,res) => {
     const newUser = new User(req.body);
     //saving the new user to the database, and sending the response
     newUser.save()
-        .then( (result) => { res.send("user created: \n"+newUser+"\nresult:\n"+result) } )
-        .catch( (err) => {res.send("Something Went Wrong!\n"+err)} )
+        .then( (result) => { res.send(result.id) } )
+        .catch( (err) => {res.send(err)} )
 });
 
 
