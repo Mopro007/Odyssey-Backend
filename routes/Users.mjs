@@ -8,12 +8,17 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 // Apply expressJwt middleware with your JWT_SECRET_KEY
 const requireAuth = JWT({ secret: JWT_SECRET_KEY , algorithms: ['HS256']});
 
-const router = express.Router();
+const usersRouter = express.Router();
 
 //Handling Users CRUD Operations...
 
+//test endpoint
+usersRouter.get('/test', (req,res) => {
+    res.send("Hello World!");
+});
+
 //POST method - Create a new user
-router.post('/users', (req,res) => {
+usersRouter.post('/', (req,res) => {
     //creating an instance of the new user using the model "User", and populate it
     const newUser = new User(req.body);
     //saving the new user to the database, and sending the response
@@ -24,7 +29,7 @@ router.post('/users', (req,res) => {
 
 
 //POST method - Login a user
-router.post('/users/login', (req, res) => {
+usersRouter.post('/login', (req, res) => {
     // Check if email and password are present in the request
     if (req.body.email && req.body.password) {
         // Check if user exists in the database
@@ -52,7 +57,8 @@ router.post('/users/login', (req, res) => {
 });
 
 // GET method - Retrieve users based on query parameters or specific ID
-router.get('/users', requireAuth,  (req, res) => {
+usersRouter.get('/', requireAuth,  (req, res) => {
+    console.log("recieved a request with body : ",req.body);
     // Check if there is an ID in the query
     if (req.query.id) {
         User.findById(req.query.id)
@@ -84,7 +90,7 @@ router.get('/users', requireAuth,  (req, res) => {
 });
 
 // PUT method - Update a user by ID
-router.put('/users/:id', requireAuth,  (req, res) => {
+usersRouter.put('/:id', requireAuth,  (req, res) => {
     User.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedUser) => {
             if (updatedUser) {
@@ -99,7 +105,7 @@ router.put('/users/:id', requireAuth,  (req, res) => {
 });
 
 // DELETE method - Delete a user by ID
-router.delete('/users/:id', requireAuth,  (req, res) => {
+usersRouter.delete('/:id', requireAuth,  (req, res) => {
     User.findByIdAndDelete(req.params.id)
         .then((deletedUser) => {
             if (deletedUser) {
@@ -116,4 +122,4 @@ router.delete('/users/:id', requireAuth,  (req, res) => {
 
 
 
-export default router;
+export default usersRouter;

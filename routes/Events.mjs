@@ -1,5 +1,6 @@
 import express from 'express';
 import Event from '../models/event.mjs';
+import User from '../models/user.mjs';
 import 'dotenv/config';
 import {expressjwt as JWT} from 'express-jwt';
 
@@ -7,7 +8,7 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 // Apply expressJwt middleware with your JWT_SECRET_KEY
 const requireAuth = JWT({ secret: JWT_SECRET_KEY , algorithms: ['HS256']});
 
-const router = express.Router();
+const eventsRouter = express.Router();
 
 
 
@@ -16,7 +17,7 @@ const router = express.Router();
 //Handling Events CRUD Operations...
 
 // POST method - Create a new event
-router.post('/events', requireAuth, (req, res) => {
+eventsRouter.post('/', requireAuth, (req, res) => {
     const newEvent = new Event(req.body);
     newEvent.save()
         .then((result) => res.send("Event created: \n" + newEvent + "\nResult:\n" + result))
@@ -24,7 +25,7 @@ router.post('/events', requireAuth, (req, res) => {
 });
 
 // GET method - Retrieve events
-router.get('/events', requireAuth, (req, res) => {
+eventsRouter.get('/', requireAuth, (req, res) => {
     if (req.query.id) {
         Event.findById(req.query.id)
             .then((event) => {
@@ -44,7 +45,7 @@ router.get('/events', requireAuth, (req, res) => {
 });
 
 // PUT method - Update an event
-router.put('/events/:id', requireAuth, (req, res) => {
+eventsRouter.put('/:id', requireAuth, (req, res) => {
     Event.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedEvent) => {
             if (updatedEvent) res.json(updatedEvent);
@@ -54,7 +55,7 @@ router.put('/events/:id', requireAuth, (req, res) => {
 });
 
 // DELETE method - Delete an event
-router.delete('/events/:id', (req, res) => {
+eventsRouter.delete('/:id', (req, res) => {
     Event.findByIdAndDelete(req.params.id)
         .then((deletedEvent) => {
             if (deletedEvent) {
@@ -69,7 +70,7 @@ router.delete('/events/:id', (req, res) => {
 });
 
 // POST method - Participate in an Event
-router.post('/events/:id/participate', requireAuth, (req, res) => {
+eventsRouter.post('/:id/participate', requireAuth, (req, res) => {
     const userId = req.body.userId;
     Event.findByIdAndUpdate(req.params.id, 
         { $addToSet: { participants: userId } }, // prevents duplicates
@@ -85,7 +86,7 @@ router.post('/events/:id/participate', requireAuth, (req, res) => {
 });
 
 // POST method - Un-participate from an Event
-router.post('/events/:id/unparticipate', requireAuth, (req, res) => {
+eventsRouter.post('/:id/unparticipate', requireAuth, (req, res) => {
     const userId = req.body.userId;
     Event.findByIdAndUpdate(req.params.id, 
         { $pull: { participants: userId } },
@@ -101,7 +102,7 @@ router.post('/events/:id/unparticipate', requireAuth, (req, res) => {
 });
 
 // POST method - Save an Event
-router.post('/users/:id/saveEvent', requireAuth, (req, res) => {
+eventsRouter.post('/users/:id/saveEvent', requireAuth, (req, res) => {
     const eventId = req.body.eventId;
     User.findByIdAndUpdate(req.params.id, 
         { $addToSet: { savedEvents: eventId } }, // prevents duplicates
@@ -117,7 +118,7 @@ router.post('/users/:id/saveEvent', requireAuth, (req, res) => {
 });
 
 // POST method - Unsave an Event
-router.post('/users/:id/unsaveEvent', requireAuth, (req, res) => {
+eventsRouter.post('/users/:id/unsaveEvent', requireAuth, (req, res) => {
     const eventId = req.body.eventId;
     User.findByIdAndUpdate(req.params.id, 
         { $pull: { savedEvents: eventId } },
@@ -133,7 +134,7 @@ router.post('/users/:id/unsaveEvent', requireAuth, (req, res) => {
 });
 
 // POST method - Add Memory to an Event
-router.post('/events/:id/addMemory', requireAuth, (req, res) => {
+eventsRouter.post('/:id/addMemory', requireAuth, (req, res) => {
     const memoryUrl = req.body.memoryUrl;
     Event.findByIdAndUpdate(req.params.id, 
         { $addToSet: { memories: memoryUrl } }, // prevents duplicates
@@ -149,7 +150,7 @@ router.post('/events/:id/addMemory', requireAuth, (req, res) => {
 });
 
 // POST method - Remove Memory from an Event
-router.post('/events/:id/removeMemory', requireAuth, (req, res) => {
+eventsRouter.post('/:id/removeMemory', requireAuth, (req, res) => {
     const memoryUrl = req.body.memoryUrl;
     Event.findByIdAndUpdate(req.params.id, 
         { $pull: { memories: memoryUrl } },
@@ -167,4 +168,4 @@ router.post('/events/:id/removeMemory', requireAuth, (req, res) => {
 
 
 
-export default router;
+export default eventsRouter;
