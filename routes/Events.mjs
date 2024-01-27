@@ -20,7 +20,7 @@ const eventsRouter = express.Router();
 eventsRouter.post('/', requireAuth, (req, res) => {
     const newEvent = new Event(req.body);
     newEvent.save()
-        .then((result) => res.send("Event created: \n" + newEvent + "\nResult:\n" + result))
+        .then((result) => res.status(201).send("Event created : "+result._id))
         .catch((err) => res.status(500).send("Something went wrong!\n" + err));
 });
 
@@ -29,16 +29,23 @@ eventsRouter.get('/', requireAuth, (req, res) => {
     if (req.query.id) {
         Event.findById(req.query.id)
             .then((event) => {
-                if (event) res.json(event);
+                if (event) res.status(200).json(event);
                 else res.status(404).send('Event not found');
             })
             .catch((err) => res.status(500).send("Error retrieving event: " + err));
-    } else {
+    } else if (req.query) {
         let query = req.query;
         Event.find(query)
             .then((events) => {
-                if (events.length > 0) res.json(events);
+                if (events.length > 0) res.status(200).json(events);
                 else res.status(404).send('No events found matching query');
+            })
+            .catch((err) => res.status(500).send("Error retrieving events: " + err));
+    } else {
+        Event.find()
+            .then((events) => {
+                if (events.length > 0) res.status(200).json(events);
+                else res.status(404).send('No events found');
             })
             .catch((err) => res.status(500).send("Error retrieving events: " + err));
     }
@@ -48,7 +55,7 @@ eventsRouter.get('/', requireAuth, (req, res) => {
 eventsRouter.put('/:id', requireAuth, (req, res) => {
     Event.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedEvent) => {
-            if (updatedEvent) res.json(updatedEvent);
+            if (updatedEvent) res.status(200).json(updatedEvent);
             else res.status(404).send('Event not found');
         })
         .catch((err) => res.status(500).send("Error updating event: " + err));
@@ -59,7 +66,7 @@ eventsRouter.delete('/:id', (req, res) => {
     Event.findByIdAndDelete(req.params.id)
         .then((deletedEvent) => {
             if (deletedEvent) {
-                res.send('Event deleted successfully');
+                res.status(200).send('Event deleted successfully');
             } else {
                 res.status(404).send('Event not found');
             }
@@ -77,7 +84,7 @@ eventsRouter.post('/:id/participate', requireAuth, (req, res) => {
         { new: true })
         .then(updatedEvent => {
             if (updatedEvent) {
-                res.json(updatedEvent);
+                res.status(200).json(updatedEvent);
             } else {
                 res.status(404).send('Event not found');
             }
@@ -93,7 +100,7 @@ eventsRouter.post('/:id/unparticipate', requireAuth, (req, res) => {
         { new: true })
         .then(updatedEvent => {
             if (updatedEvent) {
-                res.json(updatedEvent);
+                res.status(200).json(updatedEvent);
             } else {
                 res.status(404).send('Event not found');
             }
@@ -109,7 +116,7 @@ eventsRouter.post('/users/:id/saveEvent', requireAuth, (req, res) => {
         { new: true })
         .then(updatedUser => {
             if (updatedUser) {
-                res.json(updatedUser);
+                res.status(200).json(updatedUser);
             } else {
                 res.status(404).send('User not found');
             }
@@ -125,9 +132,41 @@ eventsRouter.post('/users/:id/unsaveEvent', requireAuth, (req, res) => {
         { new: true })
         .then(updatedUser => {
             if (updatedUser) {
-                res.json(updatedUser);
+                res.status(200).json(updatedUser);
             } else {
                 res.status(404).send('User not found');
+            }
+        })
+        .catch(err => res.status(500).send("Error: " + err));
+});
+
+// POST method - join an Event
+eventsRouter.post('/:id/join', requireAuth, (req, res) => {
+    const userId = req.body.userId;
+    Event.findByIdAndUpdate(req.params.id, 
+        { $addToSet: { participants: userId } }, // prevents duplicates
+        { new: true })
+        .then(updatedEvent => {
+            if (updatedEvent) {
+                res.status(200).json(updatedEvent);
+            } else {
+                res.status(404).send('Event not found');
+            }
+        })
+        .catch(err => res.status(500).send("Error: " + err));
+});
+
+// POST method - Unjoin an Event
+eventsRouter.post('/:id/unjoin', requireAuth, (req, res) => {
+    const userId = req.body.userId;
+    Event.findByIdAndUpdate(req.params.id, 
+        { $pull: { participants: userId } },
+        { new: true })
+        .then(updatedEvent => {
+            if (updatedEvent) {
+                res.status(200).json(updatedEvent);
+            } else {
+                res.status(404).send('Event not found');
             }
         })
         .catch(err => res.status(500).send("Error: " + err));
@@ -141,7 +180,7 @@ eventsRouter.post('/:id/addMemory', requireAuth, (req, res) => {
         { new: true })
         .then(updatedEvent => {
             if (updatedEvent) {
-                res.json(updatedEvent);
+                res.status(200).json(updatedEvent);
             } else {
                 res.status(404).send('Event not found');
             }
@@ -157,7 +196,7 @@ eventsRouter.post('/:id/removeMemory', requireAuth, (req, res) => {
         { new: true })
         .then(updatedEvent => {
             if (updatedEvent) {
-                res.json(updatedEvent);
+                res.status(200).json(updatedEvent);
             } else {
                 res.status(404).send('Event not found');
             }
