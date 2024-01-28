@@ -45,3 +45,5 @@ mongoose.connect(uri)
 server.use('/users', usersRouter);
 server.use('/events', eventsRouter);
 server.use('/odysseys', odysseysRouter);
+
+export default server;

@@ -2,20 +2,21 @@ import mongoose from "mongoose";
 import 'dotenv/config';
 import supertest from "supertest";
 import server from '../server.mjs';
-import { date } from "joi";
 
-const request = supertest(server);
+// const request = supertest(server);
 
 /* Connecting to the database before each test. */
 beforeEach(async () => {
-    await mongoose.connect(process.env.OdysseyTestingDB_URI);
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.OdysseyDB_URI);
+    }
   });
 
   //testing the Users router endpoints...
   //testing the GET /users/test endpoint
   describe("GET /users/test", () => {
     it("should return a test message", async () => {
-      const res = await request(server).get("/users/test");
+      const res = await supertest(server).get("/users/test");
       expect(res.statusCode).toBe(200);
       expect(res.body).toBe("Hello World!");
     });
@@ -24,7 +25,7 @@ beforeEach(async () => {
   //testing the POST /users create new user endpoint
   describe("POST /users", () => {
   it("should create a user", async () => {
-    const res = await request(server).post("/users").send({
+    const res = await supertest(server).post("/users").send({
       email: 'example@gmail.com',
       password: 'example.123',
       username: 'example',
@@ -48,7 +49,7 @@ beforeEach(async () => {
   //testing the POST /users/login endpoint
   describe("POST /users/login", () => {
     it("should login a user", async () => {
-      const res = await request(server).post("/users/login").send({
+      const res = await supertest(server).post("/users/login").send({
         email: 'example@gmail.com',
         password: 'example.123',
       });
@@ -64,7 +65,7 @@ beforeEach(async () => {
   describe("GET /users", () => {
     // test scenario 1: Retrieve a user by ID
     it("should return a user by ID", async () => {
-      const res = await request(server).get(`/users/${userId}`);
+      const res = await supertest(server).get(`/users/${userId}`);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('user');
     });
@@ -73,7 +74,7 @@ beforeEach(async () => {
     it("should return a list of users matching the query", async () => {
       // Define a query, e.g., search for users with a specific property
       const query = { username: "example" };
-      const res = await request(server).get("/users").query(query);
+      const res = await supertest(server).get("/users").query(query);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('users');
     });
@@ -82,7 +83,7 @@ beforeEach(async () => {
   //testing the PUT /users endpoint
   describe("PUT /users/:id", () => {
     it("should update a user", async () => {
-      const res = await request(server)
+      const res = await supertest(server)
         .patch("users/userId")
         .send({
           password: 'new password',
@@ -95,7 +96,7 @@ beforeEach(async () => {
   //testing the DELETE endpoint
   describe("DELETE /users/:id", () => {
     it("should delete a user", async () => {
-      const res = await request(server).delete(
+      const res = await supertest(server).delete(
         "users/userId"
       );
       expect(res.statusCode).toBe(200);
@@ -108,10 +109,10 @@ beforeEach(async () => {
   // POST method - Create a new odyssey
   describe("POST /odysseys", () => {
     it("should create an odyssey", async () => {
-      const res = await request(server).post("/odysseys").send({
+      const res = await supertest(server).post("/odysseys").send({
         title: "example odyssey",
         description: "example description",
-        itinerary: [{ location: "example location", date: date.now() }],
+        itinerary: [{ location: "example location", date: new Date() }],
         banner: "https://example.com/example123",
         participants: [userId],
       });
@@ -126,13 +127,13 @@ beforeEach(async () => {
   describe("GET /odysseys", () => {
     //scenario 1: Retrieve all odysseys
     it("should return all odysseys", async () => {
-      const res = await request(server).get("/odysseys");
+      const res = await supertest(server).get("/odysseys");
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('odysseys');
     });
     //scenario 2: Retrieve an odyssey by ID
     it("should return an odyssey by ID", async () => {
-      const res = await request(server).get(`/odysseys/${odysseyId}`);
+      const res = await supertest(server).get(`/odysseys/${odysseyId}`);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('odyssey');
     });
@@ -140,7 +141,7 @@ beforeEach(async () => {
     it("should return a list of odysseys matching the query", async () => {
       // Define a query, e.g., search for odysseys with a specific property
       const query = { title: "example odyssey" };
-      const res = await request(server).get("/odysseys").query(query);
+      const res = await supertest(server).get("/odysseys").query(query);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('odysseys');
     });
@@ -149,7 +150,7 @@ beforeEach(async () => {
   // PUT method - Update an odyssey
   describe("PUT /odysseys/:id", () => {
     it("should update an odyssey", async () => {
-      const res = await request(server).put("/odysseys/odysseyId").send({
+      const res = await supertest(server).put("/odysseys/odysseyId").send({
         title: "new title",
       });
       expect(res.statusCode).toBe(200);
@@ -159,7 +160,7 @@ beforeEach(async () => {
   // DELETE method - Delete an odyssey
   describe("DELETE /odysseys/:id", () => {
     it("should delete an odyssey", async () => {
-      const res = await request(server).delete("/odysseys/odysseyId");
+      const res = await supertest(server).delete("/odysseys/odysseyId");
       expect(res.statusCode).toBe(200);
     });
   });
@@ -167,7 +168,7 @@ beforeEach(async () => {
   // POST method - Participate in an Odyssey
   describe("POST /odysseys/:id/participate", () => {
     it("should participate in an odyssey", async () => {
-      const res = await request(server).post("/odysseys/odysseyId/participate").send({
+      const res = await supertest(server).post("/odysseys/odysseyId/participate").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -177,7 +178,7 @@ beforeEach(async () => {
   // POST method - unParticipate in an Odyssey
   describe("POST /odysseys/:id/unparticipate", () => {
     it("should unparticipate in an odyssey", async () => {
-      const res = await request(server).post("/odysseys/odysseyId/unparticipate").send({
+      const res = await supertest(server).post("/odysseys/odysseyId/unparticipate").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -190,12 +191,12 @@ beforeEach(async () => {
   // POST method - Create a new event
   describe("POST /events", () => {
     it("should create new event", async () => {
-      const res = await request(server).post("/events").send({
+      const res = await supertest(server).post("/events").send({
         title: "example event",
         description: "example description",
         location: "example location",
-        starts: date.now(),
-        ends: date.now() + 1,
+        starts: new Date(),
+        ends: new Date(),
         participants: [userId],
         memories: ["example memory"],
       });
@@ -210,20 +211,20 @@ beforeEach(async () => {
   describe("GET /events", () => {
     //scenario 1: Retrieve all events
     it("should return all events", async () => {
-      const res = await request(server).get("/events");
+      const res = await supertest(server).get("/events");
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('events');
     });
     //scenario 2: Retrieve an event by ID
     it("should return an event by ID", async () => {
-      const res = await request(server).get(`/events/${eventId}`);
+      const res = await supertest(server).get(`/events/${eventId}`);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('event');
     });
     //scenario 3: Query for events
     it("should return a list of events matching the query", async () => {
       const query = { title: "example event" };
-      const res = await request(server).get("/events").query(query);
+      const res = await supertest(server).get("/events").query(query);
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('events');
     });
@@ -232,7 +233,7 @@ beforeEach(async () => {
   // PUT method - Update an event
   describe("PUT /events/:id", () => {
     it("should update an event", async () => {
-      const res = await request(server).put("/events/eventId").send({
+      const res = await supertest(server).put("/events/eventId").send({
         title: "new title",
       });
       expect(res.statusCode).toBe(200);
@@ -242,7 +243,7 @@ beforeEach(async () => {
   // DELETE method - Delete an event
   describe("DELETE /events/:id", () => {
     it("should delete an event", async () => {
-      const res = await request(server).delete("/events/eventId");
+      const res = await supertest(server).delete("/events/eventId");
       expect(res.statusCode).toBe(200);
     });
   });
@@ -250,7 +251,7 @@ beforeEach(async () => {
   // POST method - Participate in an Event
   describe("POST /events/:id/participate", () => {
     it("should participate in an event", async () => {
-      const res = await request(server).post("/events/eventId/participate").send({
+      const res = await supertest(server).post("/events/eventId/participate").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -260,7 +261,7 @@ beforeEach(async () => {
   // POST method - unParticipate in an Event
   describe("POST /events/:id/unparticipate", () => {
     it("should unparticipate in an event", async () => {
-      const res = await request(server).post("/events/eventId/unparticipate").send({
+      const res = await supertest(server).post("/events/eventId/unparticipate").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -270,7 +271,7 @@ beforeEach(async () => {
   // POST method - Save an Event
   describe("POST /events/:id/saveEvent", () => {
     it("should save an event", async () => {
-      const res = await request(server).post("/users/userId/saveEvent").send({
+      const res = await supertest(server).post("/users/userId/saveEvent").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -280,7 +281,7 @@ beforeEach(async () => {
   // POST method - unSave an Event
   describe("POST /events/:id/unsaveEvent", () => {
     it("should unsave an event", async () => {
-      const res = await request(server).post("/users/userId/unsaveEvent").send({
+      const res = await supertest(server).post("/users/userId/unsaveEvent").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -290,7 +291,7 @@ beforeEach(async () => {
   // POST method - Join an Event
   describe("POST /events/:id/joinEvent", () => {
     it("should join an event", async () => {
-      const res = await request(server).post("/users/userId/joinEvent").send({
+      const res = await supertest(server).post("/users/userId/joinEvent").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -300,7 +301,7 @@ beforeEach(async () => {
   // POST method - unJoin an Event
   describe("POST /events/:id/unjoinEvent", () => {
     it("should unjoin an event", async () => {
-      const res = await request(server).post("/users/userId/unjoinEvent").send({
+      const res = await supertest(server).post("/users/userId/unjoinEvent").send({
         userId: userId,
       });
       expect(res.statusCode).toBe(200);
@@ -310,7 +311,7 @@ beforeEach(async () => {
   // POST method - add a memory to an Event
   describe("POST /events/:id/addMemory", () => {
     it("should add a memory to an event", async () => {
-      const res = await request(server).post("/events/eventId/addMemory").send({
+      const res = await supertest(server).post("/events/eventId/addMemory").send({
         memory: "example memory",
       });
       expect(res.statusCode).toBe(200);
@@ -320,7 +321,7 @@ beforeEach(async () => {
   // POST method - remove a memory from an Event
   describe("POST /events/:id/removeMemory", () => {
     it("should remove a memory from an event", async () => {
-      const res = await request(server).post("/events/eventId/removeMemory").send({
+      const res = await supertest(server).post("/events/eventId/removeMemory").send({
         memory: "example memory",
       });
       expect(res.statusCode).toBe(200);
@@ -330,5 +331,5 @@ beforeEach(async () => {
 
   /* Closing database connection after each test. */
   afterEach(async () => {
-    await mongoose.connection.close();
+    await mongoose.disconnect();
   });
