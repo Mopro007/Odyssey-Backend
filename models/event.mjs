@@ -10,7 +10,8 @@ const eventSchema = new Schema({
     starts: { type: Date, required:true },
     ends: { type: Date, required: true },
     participants: { type: [ObjectId], ref: 'User' },
-    memories: { type: [String]}
+    organizers: { type: [ObjectId], ref: 'User' },
+    memories: { type: [ObjectId], ref: 'Memory' },
 }, { timestamps: true });
 
 export default mongoose.model('Event', eventSchema);

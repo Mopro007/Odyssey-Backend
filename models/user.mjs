@@ -16,6 +16,7 @@ const userSchema = new Schema({
     Odyssey: {type: ObjectId, ref: 'Odyssey'},
     savedEvents: {type: [ObjectId], ref: 'Event'},
     joinedEvents: {type: [ObjectId], ref: 'Event'},
+    memories: {type: [ObjectId], ref: 'Memory'},
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);
