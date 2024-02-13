@@ -32,16 +32,30 @@ usersRouter.post('/', (req,res) => {
 usersRouter.post('/login', (req, res) => {
     // Check if email and password are present in the request
     if (req.body.email && req.body.password) {
-        // Check if user exists in the database
-        User.findOne({ email: req.body.email })
+        // Check if user exists in the database and populate the odysseys
+        User.findOne({ email: req.body.email }).populate('odysseys')
             .then((user) => {
                 if (user) {
                     // Check if password matches
                     if (user.password === req.body.password) {
                         // Create a token
                         const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY);
-                        res.json({ token: token });
-                        res.status(200).send(user);
+                        const userInfo = {
+                            _id: user._id,
+                            email: user.email,
+                            username: user.username,
+                            fullname: user.fullname,
+                            jobtitle: user.jobtitle,
+                            brief: user.brief,
+                            desiredplaces: user.desiredplaces,
+                            visitedplaces: user.visitedplaces,
+                            profilepic: user.profilepic,
+                            Odyssey: user.Odyssey,
+                            savedEvents: user.savedEvents,
+                            joinedEvents: user.joinedEvents,
+                            memories: user.memories,
+                        };
+                        res.status(200).json({ token, user: userInfo });
                     } else {
                         res.status(401).send('Incorrect password');
                     }

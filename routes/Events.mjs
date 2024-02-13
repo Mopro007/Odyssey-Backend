@@ -19,9 +19,39 @@ const eventsRouter = express.Router();
 // POST method - Create a new event
 eventsRouter.post('/', requireAuth, (req, res) => {
     const newEvent = new Event(req.body);
+    const odysseyID = req.body.odysseyID;
+    const userID = req.body.userID;
+
+    // Save the new event to the events collection in the database
+    //then update the user and the odyssey with the new event
     newEvent.save()
-        .then((result) => res.status(201).send("Event created : "+result._id))
-        .catch((err) => res.status(500).send("Something went wrong!\n" + err));
+        .then((result) => {
+            // Update the user with the new event
+            User.findByIdAndUpdate(userID,
+                { $addToSet: { joinedEvents: result._id } }, // prevents duplicates
+                { new: true })
+                .then(updatedUser => {
+                    if (updatedUser) {
+                        // Update the odyssey with the new event
+                        Odyssey.findByIdAndUpdate(odysseyID,
+                            { $addToSet: { events: result._id } }, // prevents duplicates
+                            { new: true })
+                            .then(updatedOdyssey => {
+                                if (updatedOdyssey) {
+                                    res.status(201).json(result);
+                                } else {
+                                    res.status(404).send('Odyssey not found');
+                                }
+                            })
+                            .catch(err => res.status(500).send("Error updating odyssey: " + err));
+                    } else {
+                        res.status(404).send('User not found');
+                    }
+                })
+                .catch(err => res.status(500).send("Error updating user: " + err));
+        }
+        )
+        .catch((err) => res.status(500).send("Error creating event: " + err));
 });
 
 // GET method - Retrieve events
@@ -33,7 +63,26 @@ eventsRouter.get('/', requireAuth, (req, res) => {
                 else res.status(404).send('Event not found');
             })
             .catch((err) => res.status(500).send("Error retrieving event: " + err));
-    } else if (req.query) {
+    }
+    else if (req.query.odysseyID) {
+        // Find the Odyssey by its ID
+        Odyssey.findById(req.query.odysseyId)
+            .then(odyssey => {
+                const eventIds = odyssey.events;
+                // Find the events by their IDs
+                Event.find({ '_id': { $in: eventIds } })
+                    .then(events => {
+                        if (events.length > 0) {
+                            res.status(200).json(events);
+                        } else {
+                            res.status(404).send('No events found for this Odyssey');
+                        }
+                    })
+                    .catch(err => res.status(500).send("Error retrieving events: " + err));
+            })
+            .catch(err => res.status(500).send("Error retrieving Odyssey: " + err));
+    }
+    else if (req.query) {
         let query = req.query;
         Event.find(query)
             .then((events) => {
@@ -51,16 +100,6 @@ eventsRouter.get('/', requireAuth, (req, res) => {
     }
 });
 
-// PUT method - Update an event
-eventsRouter.put('/:id', requireAuth, (req, res) => {
-    Event.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        .then((updatedEvent) => {
-            if (updatedEvent) res.status(200).json(updatedEvent);
-            else res.status(404).send('Event not found');
-        })
-        .catch((err) => res.status(500).send("Error updating event: " + err));
-});
-
 // DELETE method - Delete an event
 eventsRouter.delete('/:id', (req, res) => {
     Event.findByIdAndDelete(req.params.id)
@@ -74,38 +113,6 @@ eventsRouter.delete('/:id', (req, res) => {
         .catch((err) => {
             res.status(500).send("Error deleting event: " + err);
         });
-});
-
-// POST method - Participate in an Event
-eventsRouter.post('/:id/participate', requireAuth, (req, res) => {
-    const userId = req.body.userId;
-    Event.findByIdAndUpdate(req.params.id, 
-        { $addToSet: { participants: userId } }, // prevents duplicates
-        { new: true })
-        .then(updatedEvent => {
-            if (updatedEvent) {
-                res.status(200).json(updatedEvent);
-            } else {
-                res.status(404).send('Event not found');
-            }
-        })
-        .catch(err => res.status(500).send("Error: " + err));
-});
-
-// POST method - Un-participate from an Event
-eventsRouter.post('/:id/unparticipate', requireAuth, (req, res) => {
-    const userId = req.body.userId;
-    Event.findByIdAndUpdate(req.params.id, 
-        { $pull: { participants: userId } },
-        { new: true })
-        .then(updatedEvent => {
-            if (updatedEvent) {
-                res.status(200).json(updatedEvent);
-            } else {
-                res.status(404).send('Event not found');
-            }
-        })
-        .catch(err => res.status(500).send("Error: " + err));
 });
 
 // POST method - Save an Event
@@ -142,15 +149,36 @@ eventsRouter.post('/users/:id/unsaveEvent', requireAuth, (req, res) => {
 
 // POST method - join an Event
 eventsRouter.post('/:id/join', requireAuth, (req, res) => {
-    const userId = req.body.userId;
+    const userID = req.body.userID;
+    const odysseyID = req.body.odysseyID;
     Event.findByIdAndUpdate(req.params.id, 
-        { $addToSet: { participants: userId } }, // prevents duplicates
+        { $addToSet: { participants: userID } }, // prevents duplicates
         { new: true })
         .then(updatedEvent => {
             if (updatedEvent) {
-                res.status(200).json(updatedEvent);
-            } else {
-                res.status(404).send('Event not found');
+                // Update the user and the odyssey with the new event
+                User.findByIdAndUpdate(userID,
+                    { $addToSet: { joinedEvents: updatedEvent._id } }, // prevents duplicates
+                    { new: true })
+                    .then(updatedUser => {
+                        if (updatedUser) {
+                            // Update the odyssey with the new event
+                            Odyssey.findByIdAndUpdate(odysseyID,
+                                { $addToSet: { events: updatedEvent._id } }, // prevents duplicates
+                                { new: true })
+                                .then(updatedOdyssey => {
+                                    if (updatedOdyssey) {
+                                        res.status(200).json(updatedEvent);
+                                    } else {
+                                        res.status(404).send('Odyssey not found');
+                                    }
+                                })
+                                .catch(err => res.status(500).send("Error updating odyssey: " + err));
+                        } else {
+                            res.status(404).send('User not found');
+                        }
+                    })
+                    .catch(err => res.status(500).send("Error updating user: " + err));
             }
         })
         .catch(err => res.status(500).send("Error: " + err));
@@ -164,7 +192,29 @@ eventsRouter.post('/:id/unjoin', requireAuth, (req, res) => {
         { new: true })
         .then(updatedEvent => {
             if (updatedEvent) {
-                res.status(200).json(updatedEvent);
+                // Update the user and the odyssey with the new event
+                User.findByIdAndUpdate(userId,
+                    { $pull: { joinedEvents: updatedEvent._id } },
+                    { new: true })
+                    .then(updatedUser => {
+                        if (updatedUser) {
+                            // Update the odyssey with the new event
+                            Odyssey.findByIdAndUpdate(odysseyID,
+                                { $pull: { events: updatedEvent._id } },
+                                { new: true })
+                                .then(updatedOdyssey => {
+                                    if (updatedOdyssey) {
+                                        res.status(200).json(updatedEvent);
+                                    } else {
+                                        res.status(404).send('Odyssey not found');
+                                    }
+                                })
+                                .catch(err => res.status(500).send("Error updating odyssey: " + err));
+                        } else {
+                            res.status(404).send('User not found');
+                        }
+                    })
+                    .catch(err => res.status(500).send("Error updating user: " + err));
             } else {
                 res.status(404).send('Event not found');
             }
