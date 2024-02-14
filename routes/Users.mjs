@@ -23,10 +23,14 @@ usersRouter.post('/', (req,res) => {
     const newUser = new User(req.body);
     //saving the new user to the database, and sending the response
     newUser.save()
-        .then( (result) => { res.send(result.id) } )
+        .then( (result) => { 
+            // Create a token
+            const token = jwt.sign({ id: result.id }, JWT_SECRET_KEY,  { expiresIn: '1w' });
+            res.cookie('token', token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+            res.send(result) 
+        } )
         .catch( (err) => {res.send(err)} )
 });
-
 
 //POST method - Login a user
 usersRouter.post('/login', (req, res) => {
@@ -39,7 +43,8 @@ usersRouter.post('/login', (req, res) => {
                     // Check if password matches
                     if (user.password === req.body.password) {
                         // Create a token
-                        const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY);
+                        const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY,  { expiresIn: '1w' });
+                        res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
                         const userInfo = {
                             _id: user._id,
                             email: user.email,
@@ -70,6 +75,42 @@ usersRouter.post('/login', (req, res) => {
         res.status(400).send('Email and password are required in the request body');
     }
 });
+
+// GET method - authenticate a user
+usersRouter.get('/auth', (req, res) => {
+    const token = req.cookies['token'];
+    if (!token) {
+      return res.status(401).json({ authenticated: false });
+    }
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET_KEY);
+      // fetch the user info from the database, store it in the userInfo object, and send it in the response
+      User.findById(decoded.id)
+        .then((user) => {
+          if (user) {
+            res.json({ authenticated: true, userInfo: user });
+          } else {
+            res.status(404).json({ authenticated: false });
+          }
+        })
+        .catch((err) => {
+          res.status(500).json({ authenticated: false, error: err });
+        });
+    } catch (err) {
+      res.status(401).json({ authenticated: false });
+    }
+  });
+
+// POST method - Logout a user
+usersRouter.post('/logout', (req, res) => {
+    res.cookie('token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      expires: new Date(0) // Set the cookie to expire immediately
+    });
+    res.status(200).json({ message: 'Logged out successfully' });
+  });
 
 // GET method - Retrieve users based on query parameters or specific ID
 usersRouter.get('/', requireAuth,  (req, res) => {
