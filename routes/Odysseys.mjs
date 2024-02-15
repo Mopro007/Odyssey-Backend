@@ -20,7 +20,7 @@ const odysseysRouter = express.Router();
 odysseysRouter.post('/', requireAuth,  (req, res) => {
     const newOdyssey = new Odyssey(req.body);
     newOdyssey.save()
-        .then((result) => res.status(201).send("Odyssey created : "+ result._id))
+        .then((result) => res.status(201).send(result))
         .catch((err) => res.status(500).send("Something went wrong!\n" + err));
 });
 

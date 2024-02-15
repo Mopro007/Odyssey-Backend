@@ -2,9 +2,20 @@ import express from 'express';
 import User from '../models/user.mjs';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import AWS from 'aws-sdk';
 import {expressjwt as JWT} from 'express-jwt';
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+
+// Configure the AWS SDK
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION
+  });
+// S3 instance
+const s3 = new AWS.S3();
+
 // Apply expressJwt middleware with your JWT_SECRET_KEY
 const requireAuth = JWT({ secret: JWT_SECRET_KEY , algorithms: ['HS256']});
 
@@ -15,6 +26,30 @@ const usersRouter = express.Router();
 //test endpoint
 usersRouter.get('/test', (req,res) => {
     res.send("Hello World!");
+});
+
+// Generate pre-signed URL for uploading
+usersRouter.post('/generate-presigned-url', requireAuth, (req, res) => {
+    const { fileName, fileType, bucketName } = req.body;
+  
+    // Define the necessary parameters for the pre-signed URL
+    const params = {
+      Bucket: bucketName,
+      Key: fileName,
+      Expires: 60, // URL expiry time in seconds
+      ContentType: fileType,
+      ACL: 'public-read' // Make file publicly readable
+    };
+  
+    // Generate the pre-signed URL
+    s3.getSignedUrl('putObject', params, (err, url) => {
+      if (err) {
+        console.log(err);
+        res.status(500).json({ error: "Error generating pre-signed URL" });
+      } else {
+        res.json({ url });
+      }
+    });
 });
 
 //POST method - Create a new user

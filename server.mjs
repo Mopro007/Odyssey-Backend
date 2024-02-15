@@ -13,16 +13,10 @@ import odysseysRouter from './routes/Odysseys.mjs';
 const server = express();
 // Use CORS with default settings (allowing all cross-origin requests)
 server.use(cors({
-  origin: 'https://yourfrontenddomain.com', // Specify your frontend domain
+  origin: 'https://yourfrontenddomain.com', //frontend domain and testing domain
   credentials: true, // Crucial for cookies to be sent with requests from the frontend
 }));
-// Or configure CORS with options for more control
-// server.use(cors({
-//   origin: 'https://example.com', // or use an array of origins
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-//   // ...other configurations
-// }));
+
 server.use(express.json());
 
 //Rate limiting
