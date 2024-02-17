@@ -20,17 +20,20 @@ const odysseysRouter = express.Router();
 odysseysRouter.post('/', requireAuth,  (req, res) => {
     const newOdyssey = new Odyssey(req.body);
     newOdyssey.save()
-        .then((result) => res.status(201).send(result))
-        .catch((err) => res.status(500).send("Something went wrong!\n" + err));
+        .then((result) => res.status(201).json({odysseyId: result._id , odyssey: result}))
+        .catch((err) => {
+            console.error("Error saving new odyssey:", err); // Log detailed error
+            res.status(500).send("Something went wrong!\n" + err); // Send generic error to client
+        });
 });
 
 // GET method - Retrieve odysseys
 odysseysRouter.get('/', requireAuth,  (req, res) => {
     //scenario 1: Retrieve an odyssey by ID
-    if (req.query.id) {
-        Odyssey.findById(req.query.id)
+    if (req.query.odysseyId) {
+        Odyssey.findById(req.query.odysseyId)
             .then((odyssey) => {
-                if (odyssey) {res.status(200).json(odyssey)}
+                if (odyssey) {res.status(200).json({odyssey: odyssey})}
                 else {res.status(404).send('Odyssey not found')};
             })
             .catch((err) => res.status(500).send("Error retrieving odyssey: " + err));
@@ -40,7 +43,7 @@ odysseysRouter.get('/', requireAuth,  (req, res) => {
         let query = req.query;
         Odyssey.find(query)
             .then((odysseys) => {
-                if (odysseys.length > 0) {res.status(200).json(odysseys)}
+                if (odysseys.length > 0) {res.status(200).json({odysseys: odysseys})}
                 else {res.status(404).send('No odysseys found matching query')};
             })
             .catch((err) => res.status(500).send("Error retrieving odysseys: " + err));
@@ -49,7 +52,7 @@ odysseysRouter.get('/', requireAuth,  (req, res) => {
     else {
         // Retrieve all odysseys
         Odyssey.find()
-            .then((odysseys) => res.status(200).json(odysseys))
+            .then((odysseys) => res.status(200).json({odysseys: odysseys}))
             .catch((err) => res.status(500).send("Error retrieving odysseys: " + err));
     }
 });
@@ -58,20 +61,10 @@ odysseysRouter.get('/', requireAuth,  (req, res) => {
 odysseysRouter.put('/:id', requireAuth, (req, res) => {
     Odyssey.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedOdyssey) => {
-            if (updatedOdyssey) res.status(200).json(updatedOdyssey);
+            if (updatedOdyssey) res.status(200).json({updatedOdyssey: updatedOdyssey});
             else res.status(404).send('Odyssey not found');
         })
         .catch((err) => res.status(500).send("Error updating odyssey: " + err));
-});
-
-// DELETE method - Delete an odyssey
-odysseysRouter.delete('/:id', requireAuth, (req, res) => {
-    Odyssey.findByIdAndDelete(req.params.id)
-        .then((deletedOdyssey) => {
-            if (deletedOdyssey) res.status(200).send('Odyssey deleted successfully');
-            else res.status(404).send('Odyssey not found');
-        })
-        .catch((err) => res.status(500).send("Error deleting odyssey: " + err));
 });
 
 // POST method - Participate in an Odyssey
@@ -105,6 +98,17 @@ odysseysRouter.post('/:id/unparticipate', requireAuth, (req, res) => {
         })
         .catch(err => res.status(500).send("Error: " + err));
 });
+
+// DELETE method - Delete an odyssey
+odysseysRouter.delete('/:id', requireAuth, (req, res) => {
+    Odyssey.findByIdAndDelete(req.params.id)
+        .then((deletedOdyssey) => {
+            if (deletedOdyssey) res.status(200).send('Odyssey deleted successfully');
+            else res.status(404).send('Odyssey not found');
+        })
+        .catch((err) => res.status(500).send("Error deleting odyssey: " + err));
+});
+
 
 
 
