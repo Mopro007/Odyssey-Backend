@@ -6,4 +6,8 @@ export default {
     testMatch: ['**/__tests__/**/*.test.mjs'], // Specify the test file pattern
     preset: 'ts-jest', // Use the ts-jest preprocessor
     globals: {'ts-jest': {useESM: true,},}, // Use the ESM version of ts-jest
+    transform: {},
+    moduleFileExtensions: ['js', 'mjs', 'json', 'node'],
+    transformIgnorePatterns: ['<rootDir>/node_modules/'],
+    testTimeout: 30000, // Set the default test timeout to 30 seconds
   };

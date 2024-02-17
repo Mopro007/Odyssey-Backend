@@ -25,7 +25,9 @@ const usersRouter = express.Router();
 
 //test endpoint
 usersRouter.get('/test', (req,res) => {
-    res.send("Hello World!");
+    console.log("testing rpute recieved a request!");
+    res.status(200).send("Hello World!");
+    console.log("testing route sent a response!");
 });
 
 // Generate pre-signed URL for uploading
@@ -62,7 +64,7 @@ usersRouter.post('/', (req,res) => {
             // Create a token
             const token = jwt.sign({ id: result.id }, JWT_SECRET_KEY,  { expiresIn: '1w' });
             res.cookie('token', token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
-            res.send(result) 
+            res.status(201).json(result);
         } )
         .catch( (err) => {res.send(err)} )
 });
@@ -71,41 +73,41 @@ usersRouter.post('/', (req,res) => {
 usersRouter.post('/login', (req, res) => {
     // Check if email and password are present in the request
     if (req.body.email && req.body.password) {
+        const  email  = req.body.email;
+        const  password  = req.body.password;
         // Check if user exists in the database and populate the odysseys
-        User.findOne({ email: req.body.email }).populate('odysseys')
-            .then((user) => {
-                if (user) {
-                    // Check if password matches
-                    if (user.password === req.body.password) {
-                        // Create a token
-                        const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY,  { expiresIn: '1w' });
-                        res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
-                        const userInfo = {
-                            _id: user._id,
-                            email: user.email,
-                            username: user.username,
-                            fullname: user.fullname,
-                            jobtitle: user.jobtitle,
-                            brief: user.brief,
-                            desiredplaces: user.desiredplaces,
-                            visitedplaces: user.visitedplaces,
-                            profilepic: user.profilepic,
-                            Odyssey: user.Odyssey,
-                            savedEvents: user.savedEvents,
-                            joinedEvents: user.joinedEvents,
-                            memories: user.memories,
-                        };
-                        res.status(200).json({ token, user: userInfo });
-                    } else {
-                        res.status(401).send('Incorrect password');
-                    }
+        User.findOne({ email }).populate('Odyssey')
+        .then((user) => {
+            if (user) {
+            // Check if password matches
+                if (user.password === password) {
+                    // Create a token
+                    const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY,  { expiresIn: '1w' });
+                    res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+                    const userInfo = {
+                        _id: user._id,
+                        email: user.email,
+                        username: user.username,
+                        fullname: user.fullname,
+                        jobtitle: user.jobtitle,
+                        brief: user.brief,
+                        desiredplaces: user.desiredplaces,
+                        visitedplaces: user.visitedplaces,
+                        profilepic: user.profilepic,
+                        Odyssey: user.Odyssey,
+                        savedEvents: user.savedEvents,
+                        joinedEvents: user.joinedEvents,
+                        memories: user.memories,
+                    };
+                    res.status(200).json({ token, user: userInfo });
                 } else {
-                    res.status(404).send('User not found');
+                    res.status(401).send('Incorrect password');
                 }
-            })
-            .catch((err) => {
-                res.status(500).send("Error logging in: " + err);
-            });
+            } else{
+                console.log("User not found in the database");
+                res.status(404).send('User not found');
+            }
+        })
     } else {
         res.status(400).send('Email and password are required in the request body');
     }
@@ -147,44 +149,64 @@ usersRouter.post('/logout', (req, res) => {
     res.status(200).json({ message: 'Logged out successfully' });
   });
 
-// GET method - Retrieve users based on query parameters or specific ID
-usersRouter.get('/', requireAuth,  (req, res) => {
-    // Check if there is an ID in the query
+// GET method - Retrieve users by ID or query
+usersRouter.get('/', requireAuth, (req, res) => {
+    // Check if the 'id' query parameter is present
     if (req.query.id) {
-        User.findById(req.query.id)
-            .then((user) => {
+        // Fetch user by ID
+        User.findById(req.query.id).populate('Odyssey')
+            .then(user => {
                 if (user) {
-                    res.json(user);
+                    const userInfo = {
+                        _id: user._id,
+                        email: user.email,
+                        username: user.username,
+                        fullname: user.fullname,
+                        jobtitle: user.jobtitle,
+                        brief: user.brief,
+                        desiredplaces: user.desiredplaces,
+                        visitedplaces: user.visitedplaces,
+                        profilepic: user.profilepic,
+                        Odyssey: user.Odyssey,
+                        savedEvents: user.savedEvents,
+                        joinedEvents: user.joinedEvents,
+                        memories: user.memories,
+                    };
+                    res.status(200).json({ userInfo: userInfo });
                 } else {
                     res.status(404).send('User not found');
                 }
             })
-            .catch((err) => {
+            .catch(err => {
                 res.status(500).send("Error retrieving user: " + err);
             });
-    } else {
-        // If no ID, check other query parameters
+    } else if (Object.keys(req.query).length > 0) {
+        // Query users based on other criteria
         let query = req.query;
         User.find(query)
-            .then((users) => {
+            .then(users => {
                 if (users.length > 0) {
-                    res.json(users);
+                    res.status(200).json({ users: users });
                 } else {
                     res.status(404).send('No users found matching query');
                 }
             })
-            .catch((err) => {
+            .catch(err => {
                 res.status(500).send("Error retrieving users: " + err);
             });
+    } else {
+        // If no query parameters are provided
+        res.status(400).send('Please provide query parameters or an ID');
     }
 });
+
 
 // PUT method - Update a user by ID
 usersRouter.put('/:id', requireAuth,  (req, res) => {
     User.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then((updatedUser) => {
             if (updatedUser) {
-                res.json(updatedUser);
+                res.status(200).json({updatedUser: updatedUser});
             } else {
                 res.status(404).send('User not found');
             }
@@ -199,7 +221,7 @@ usersRouter.delete('/:id', requireAuth,  (req, res) => {
     User.findByIdAndDelete(req.params.id)
         .then((deletedUser) => {
             if (deletedUser) {
-                res.send('User deleted successfully');
+                res.status(200).send('User deleted successfully');
             } else {
                 res.status(404).send('User not found');
             }

@@ -33,7 +33,7 @@ server.use(mongoSanitize());
 server.use(helmet());
 
 //establishing the connection with the database
-const uri = process.env.OdysseyDB_URI;
+const uri = process.env.OdysseyTestingDB_URI;
 const port = process.env.PORT;
 mongoose.connect(uri)
     .then((result) => server.listen(port,() => {console.log("listening on localhost: "+port)}))
