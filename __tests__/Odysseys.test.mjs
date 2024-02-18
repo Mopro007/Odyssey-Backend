@@ -7,7 +7,7 @@ import server from '../server.mjs';
 /* Connecting to the database before each test. */
 beforeEach(async () => {
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(process.env.OdysseyTestingDB_URI);
+      await mongoose.connect(process.env.OdysseyDB_URI);
     }
   });
 
