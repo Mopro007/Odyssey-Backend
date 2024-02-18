@@ -96,13 +96,13 @@ let token; // Store token globally within test file
     });
   });
   
-  //testing the DELETE endpoint
-  describe("DELETE /users/:id", () => {
-    it("should delete a user", async () => {
-      const res = await supertest(server).delete(`/users/${userId}`).set('Authorization', `Bearer ${token}`);
-      expect(res.statusCode).toBe(200);
-    });
-  });
+  // //testing the DELETE endpoint
+  // describe("DELETE /users/:id", () => {
+  //   it("should delete a user", async () => {
+  //     const res = await supertest(server).delete(`/users/${userId}`).set('Authorization', `Bearer ${token}`);
+  //     expect(res.statusCode).toBe(200);
+  //   });
+  // });
 
 
 

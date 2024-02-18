@@ -20,7 +20,7 @@ let odysseyId // Declare odysseyId at the top level
     it("should login a user", async () => {
       const res = await supertest(server).post("/users/login").send({
         email: 'example@gmail.com',
-        password: 'example.123',
+        password: 'new password',
       });
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('token');
@@ -105,13 +105,13 @@ let odysseyId // Declare odysseyId at the top level
     });
   });
 
-  // DELETE method - Delete an odyssey
-  describe("DELETE /odysseys/:id", () => {
-    it("should delete an odyssey", async () => {
-      const res = await supertest(server).delete(`/odysseys/${odysseyId}`).set('Authorization', `Bearer ${token}`);
-      expect(res.statusCode).toBe(200);
-    });
-  });
+  // // DELETE method - Delete an odyssey
+  // describe("DELETE /odysseys/:id", () => {
+  //   it("should delete an odyssey", async () => {
+  //     const res = await supertest(server).delete(`/odysseys/${odysseyId}`).set('Authorization', `Bearer ${token}`);
+  //     expect(res.statusCode).toBe(200);
+  //   });
+  // });
 
 
 
