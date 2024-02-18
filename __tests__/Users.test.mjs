@@ -32,8 +32,8 @@ let token; // Store token globally within test file
       visitedplaces: ['example','example','example'],
       profilepic: 'https://example.com/example123',
       Odyssey: null,
-      savedEvents: null,
-      joinedEvents: null,
+      savedEvents: [],
+      joinedEvents: [],
     });
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('_id');

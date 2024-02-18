@@ -15,7 +15,7 @@ const userSchema = new Schema({
     profilepic: { type: String },
     Odyssey: {type: ObjectId, ref: 'Odyssey'},
     savedEvents: {type: [ObjectId], ref: 'Event'},
-    joinedEvents: {type: [ObjectId], ref: 'Event'},
+    joinedEvents: {type: [ObjectId], ref: 'Event', required: true},
     memories: {type: [ObjectId], ref: 'Memory'},
 }, { timestamps: true });
 

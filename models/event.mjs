@@ -9,6 +9,7 @@ const eventSchema = new Schema({
     location: {type: String, required: true},
     starts: { type: Date, required:true },
     ends: { type: Date, required: true },
+    odyssey: { type: ObjectId, ref: 'Odyssey' , required: true},
     participants: { type: [ObjectId], ref: 'User' },
     organizers: { type: [ObjectId], ref: 'User' },
     memories: { type: [ObjectId], ref: 'Memory' },
