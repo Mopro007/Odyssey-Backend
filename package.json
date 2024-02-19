@@ -9,7 +9,7 @@
     "test:Users": "node --experimental-vm-modules node_modules/jest/bin/jest.js Users.test.mjs",
     "test:Odysseys": "node --experimental-vm-modules node_modules/jest/bin/jest.js Odysseys.test.mjs",
     "test:Events": "node --experimental-vm-modules node_modules/jest/bin/jest.js Events.test.mjs",
-    "start": "nodemon server.mjs"
+    "start": "node server.mjs"
   },
   "repository": {
     "type": "git",
