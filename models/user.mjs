@@ -6,16 +6,16 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
-    username: { type: String, required: true },
-    fullname: { type: String, required: true, maxlength: 30 },
+    username: { type: String },
+    fullname: { type: String, maxlength: 30 },
     jobtitle: { type: String },
-    brief: { type: String, required: true },
-    desiredplaces: { type: [String], required: true },
-    visitedplaces: { type: [String], required: true },
+    brief: { type: String },
+    desiredplaces: { type: [String] },
+    visitedplaces: { type: [String] },
     profilepic: { type: String },
     Odyssey: {type: ObjectId, ref: 'Odyssey'},
     savedEvents: {type: [ObjectId], ref: 'Event'},
-    joinedEvents: {type: [ObjectId], ref: 'Event', required: true},
+    joinedEvents: {type: [ObjectId], ref: 'Event'},
     memories: {type: [ObjectId], ref: 'Memory'},
 }, { timestamps: true });
 
