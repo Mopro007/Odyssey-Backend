@@ -13,7 +13,7 @@ import odysseysRouter from './routes/Odysseys.mjs';
 const server = express();
 // Use CORS with default settings (allowing all cross-origin requests)
 server.use(cors({
-  origin: 'https://yourfrontenddomain.com', //frontend domain and testing domain
+  origin: 'http://localhost:3000', //frontend domain and testing domain
   credentials: true, // Crucial for cookies to be sent with requests from the frontend
 }));
 
