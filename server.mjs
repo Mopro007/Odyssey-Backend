@@ -11,6 +11,9 @@ import eventsRouter from './routes/Events.mjs';
 import odysseysRouter from './routes/Odysseys.mjs';
 
 const server = express();
+
+server.set('trust proxy', true);
+
 // Use CORS with default settings (allowing all cross-origin requests)
 server.use(cors({
   origin: 'http://localhost:3000', //frontend domain and testing domain
