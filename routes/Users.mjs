@@ -56,7 +56,7 @@ usersRouter.post('/generate-presigned-url', requireAuth, (req, res) => {
 
 //POST method - Create a new user
 usersRouter.post('/', (req,res) => {
-    console.log("Request received, body: " + req.body);
+    console.log("Request received, body: " + JSON.stringify(req.body));
     //creating an instance of the new user using the model "User", and populate it
     const newUser = new User(req.body);
     //saving the new user to the database, and sending the response
