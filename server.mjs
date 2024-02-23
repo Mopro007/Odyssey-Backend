@@ -12,7 +12,7 @@ import odysseysRouter from './routes/Odysseys.mjs';
 
 const server = express();
 
-server.set('trust proxy', true);
+server.set('trust proxy', 1);
 
 // Use CORS with default settings (allowing all cross-origin requests)
 server.use(cors({
