@@ -117,6 +117,7 @@ usersRouter.post('/login', (req, res) => {
 // GET method - authenticate a user
 usersRouter.get('/auth', (req, res) => {
     const token = req.cookies['token'];
+    console.log("Token: " + token)
     if (!token) {
       return res.status(401).json({ authenticated: false });
     }
